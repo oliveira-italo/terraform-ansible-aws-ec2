@@ -7,26 +7,28 @@
                 - virtualenv
             update_cache: yes
         become: yes
+      - name: git clone
+        ansible.builtin.git:
+            repo: https://github.com/alura-cursos/clientes-leo-api.git
+            dest: /home/ubuntu/tcc
+            version: master
+            force: yes
       - name: install dependencies com pip (django and django rest)
         pip:
             virtualenv: /home/ubuntu/tcc/venv
-            name:
-                - django
-                - djangorestframework
-      - name: check if project exists
-        stat:
-            path: "/home/ubuntu/tcc/setup/settings.py"
-        register: project
-      - name: init django project
-        shell: ". /home/ubuntu/tcc/venv/bin/activate; django-admin startproject setup /home/ubuntu/tcc/"
-        when: not project.stat.exists
-        ignore_errors: yes
+            requirements: /home/ubuntu/tcc/requirements.txt
       - name: fix hosts from settings
         lineinfile: # replace file lines
             path: /home/ubuntu/tcc/setup/settings.py
             regexp: "ALLOWED_HOSTS"
             line: 'ALLOWED_HOSTS = ["*"]'
             backrefs: yes
+      - name: config database
+        shell: ". /home/ubuntu/tcc/venv/bin/activate; python /home/ubuntu/tcc/manage.py migrate"
+      - name: load database
+        shell: ". /home/ubuntu/tcc/venv/bin/activate; python /home/ubuntu/tcc/manage.py loaddata clientes.json"
+      - name: init api
+        shell: ". /home/ubuntu/tcc/venv/bin/activate; nohup python /home/ubuntu/tcc/manage.py runserver 0.0.0.0:8000 &"
   # - name: create index.html file
   #   copy:
   #     dest: /home/ubuntu/index.html
