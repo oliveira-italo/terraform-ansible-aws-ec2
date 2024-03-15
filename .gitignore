@@ -38,3 +38,6 @@ override.tf.json
 terraform.rc
 *.pem
 .vscode
+
+#ssh keys
+**/iac-*
