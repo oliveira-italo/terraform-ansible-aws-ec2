@@ -10,14 +10,19 @@ terraform {
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "us-west-2"
+  # profile = "default"
+  region = var.aws_region
+}
+
+resource "aws_key_pair" "chaveSSH" {
+  key_name   = var.ssh_key
+  public_key = file("${var.ssh_key}.pub")
 }
 
 resource "aws_instance" "app_server" {
   ami           = "ami-0eb199b995e2bc4e3" // código do sistema operacional que rodará na instancia, disponível no AMI catalog na AWS
-  instance_type = "t2.micro"              // tipo de instancia aws, com configurações próprias de hardware
-  key_name      = "iac-alura"             // chave ssh, criada no console aws (EC2 -> KEY PAIRS), será usada para acessar a instancia (ver connect ssh no console do EC2)
+  instance_type = var.instance_type       // tipo de instancia aws, com configurações próprias de hardware
+  key_name      = var.ssh_key             // chave ssh, criada no console aws (EC2 -> KEY PAIRS), será usada para acessar a instancia (ver connect ssh no console do EC2)
   # user_data     = <<-EOF
   #                 #!/bin/bash
   #                 cd /home/ubuntu
@@ -25,11 +30,10 @@ resource "aws_instance" "app_server" {
   #                 nohup busybox httpd -f -p 8080 &
   #               EOF
   tags = {
-    Name = "terraform-ansible-python"
+    Name = "terraform-ansible-${var.env_name}"
   }
 }
 
-resource "aws_key_pair" "sshKey" {
-  key_name = "DEV"
-  public_key = file("iac-dev.pub")
+output "public_ip" {
+  value = aws_instance.app_server.public_ip
 }
