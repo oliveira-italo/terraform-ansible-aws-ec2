@@ -1,0 +1,30 @@
+- hosts: terraform-ansible
+  tasks:
+    - name: install python3 and virtualenv
+      apt: # install packages
+        pkg:
+          - python3
+          - virtualenv
+        update_cache: yes
+      become: yes
+    - name: install dependencies com pip (django and django rest)
+      pip:
+        virtualenv: /home/ubuntu/tcc/venv
+        name:
+          - django
+          - djangorestframework
+    - name: init django project
+      shell: '. /home/ubuntu/tcc/venv/bin/activate; django-admin startproject setup /home/ubuntu/tcc/'
+      ignore_errors: yes
+    - name: fix hosts from settings
+      lineinfile: # replace file lines
+        path: /home/ubuntu/tcc/setup/settings.py
+        regexp: 'ALLOWED_HOSTS'
+        line: 'ALLOWED_HOSTS = ["*"]'
+        backrefs: yes
+  # - name: create index.html file
+  #   copy:
+  #     dest: /home/ubuntu/index.html
+  #     content: <h1>That was changed by ansible</h1>
+  # - name: create server
+  #   shell: "nohup busybox httpd -f -p 8080 &"

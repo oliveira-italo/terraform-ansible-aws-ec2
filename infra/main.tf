@@ -25,6 +25,11 @@ resource "aws_instance" "app_server" {
   #                 nohup busybox httpd -f -p 8080 &
   #               EOF
   tags = {
-    Name = "aws-ansible"
+    Name = "terraform-ansible-python"
   }
+}
+
+resource "aws_key_pair" "sshKey" {
+  key_name = "DEV"
+  public_key = file("iac-dev.pub")
 }
